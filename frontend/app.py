@@ -29,7 +29,7 @@ product_data = {
 }
 
 if st.button("Predict", type="primary"):
-    response = requests.post("https://github.com/codespaces/symmetrical-spoon-r7447r579pwvhpq4r/v1/predict", json=product_data)
+    response = requests.post("https://fantastic-computing-machine-96776qg6rpg53xp9p-5000.app.github.dev/v1/predict", json=product_data)
     if response.status_code == 200:
         result = response.json()
         predicted_sales = result["Sales"]
