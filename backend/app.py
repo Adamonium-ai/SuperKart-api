@@ -1,14 +1,15 @@
-
 # Import necessary libraries
 import numpy as np
 import joblib  # For loading the serialized model
 import pandas as pd  # For data manipulation
 from flask import Flask, request, jsonify  # For creating the Flask API
+from flask_cors import CORS
 
 # Initialize Flask app with a name
 superkart_api = Flask("Prediction_Model")
+CORS(superkart_api)
 
-# Load the trained churn prediction model
+# Load the trained model
 model = joblib.load("xgb_final.joblib")
 
 # Define a route for the home page
@@ -16,37 +17,27 @@ model = joblib.load("xgb_final.joblib")
 def home():
     return "SuperKart Model API is running."
 
-# Define an endpoint to predict churn for a single customer
+# Define an endpoint to predict sales
 @superkart_api.post('/v1/predict')
 def predict_sales():
-    # Get JSON data from the request
     data = request.get_json()
 
-    # Extract relevant customer features from the input data. The order of the column names matters.
+    # Match exactly what model.feature_names_in_ expects
     sample = {
+        'Product_Id': data['Product_Id'],
         'Product_Weight': data['Product_Weight'],
         'Product_Sugar_Content': data['Product_Sugar_Content'],
         'Product_Allocated_Area': data['Product_Allocated_Area'],
+        'Product_Type': data['Product_Type'],
         'Product_MRP': data['Product_MRP'],
+        'Store_Id': data['Store_Id'],
+        'Store_Establishment_Year': data['Store_Establishment_Year'],
         'Store_Size': data['Store_Size'],
         'Store_Location_City_Type': data['Store_Location_City_Type'],
-        'Store_Type': data['Store_Type'],
-        'Product_Id_char': data['Product_Id_char'],
-        'Store_Age_Years': data['Store_Age_Years'],
-        'Product_Type_Category': data['Product_Type_Category']
+        'Store_Type': data['Store_Type']
     }
 
-    # Convert the extracted data into a DataFrame
     input_data = pd.DataFrame([sample])
-
-    # Make a churn prediction using the trained model
     prediction = model.predict(input_data).tolist()[0]
 
-    # Return the prediction as a JSON response
     return jsonify({'Sales': prediction})
-
-
-# Run the Flask app in debug mode
-# This block is typically commented out when writing the file for deployment
-# if __name__ == '__main__':
-#    superkart_api.run(debug=True)
